@@ -1,0 +1,4 @@
+rootProject.name = 'multiplatform-demo'
+include 'backend'
+include 'common'
+include 'front-end'

@@ -1,0 +1,39 @@
+apply plugin: 'org.jetbrains.kotlin.frontend'
+apply plugin: 'kotlin-dce-js'
+apply plugin: 'kotlin-platform-js'
+
+compileKotlin2Js {
+    kotlinOptions.metaInfo = true
+    kotlinOptions.outputFile = "$project.buildDir.path/js/${project.name}.js"
+    kotlinOptions.sourceMap = true
+    kotlinOptions.moduleKind = 'commonjs'
+    kotlinOptions.main = "call"
+}
+
+repositories() {
+     maven { url "https://kotlin.bintray.com/kotlin-js-wrappers" }
+}
+
+kotlinFrontend {
+    npm {
+        dependency "react"
+        dependency "react-dom"
+        dependency "style-loader"
+        devDependency "karma"
+    }
+    webpackBundle {
+        bundleName = "main"
+        contentPath = file('src/main/web')
+        proxyUrl = "http://localhost:4567"
+    }
+}
+
+dependencies {
+    expectedBy project(':common')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
+    compile 'org.jetbrains:kotlin-react-dom:16.2.0-pre.15-kotlin-1.2.0'
+    compile 'org.jetbrains.kotlinx:kotlinx-html-js:0.6.8'
+    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version"
+
+    testCompile "org.jetbrains.kotlin:kotlin-test-js:$kotlin_version"
+}
