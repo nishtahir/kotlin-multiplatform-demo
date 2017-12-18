@@ -1,19 +1,82 @@
 package app
 
 import com.nishtahir.multiplatform.Issue
-import kotlinx.html.js.onClickFunction
+import kotlinx.html.InputType
+import kotlinx.html.id
 import kotlinx.serialization.json.JSON
 import kotlinx.serialization.list
 import kotlinx.serialization.serializer
+import onClick
+import org.w3c.dom.Element
 import org.w3c.fetch.Response
 import react.*
 import react.dom.*
 import kotlin.browser.document
 import kotlin.browser.window
 
-class App : RComponent<RProps, RState>() {
+class App : RComponent<RProps, AppState>() {
+
+    init {
+        state = AppState(Screen.ISSUES)
+    }
 
     override fun RBuilder.render() {
+        println("State - ${state.screen}")
+        when (state.screen) {
+            Screen.ISSUES -> renderIssues(this)
+            Screen.CREATE -> renderCreate(this)
+        }
+
+        document.getElementById("create-link")?.apply {
+            onClick(preventDefault = true) {
+                setState {
+                    screen = Screen.CREATE
+                }
+            }
+        }
+    }
+
+    override fun componentDidUpdate(prevProps: RProps, prevState: AppState) {
+        // super.componentDidUpdate(prevProps, prevState)
+        // README: Calling super on any of the react lifecycle method doesn't work. Don't do this ^
+        MdlComponentHandler.upgradeDom() // you want to do this on the root element
+    }
+
+    /**
+     *
+    <form action="#">
+    <div class="mdl-textfield mdl-js-textfield">
+    <input class="mdl-textfield__input" type="text" id="sample1">
+    <label class="mdl-textfield__label" for="sample1">Text...</label>
+    </div>
+    </form>
+
+     */
+    private fun renderCreate(rBuilder: RBuilder) = with(rBuilder) {
+        div("mdl-cell mdl-cell--4-col") {
+            form(action = "#") {
+                div("mdl-textfield mdl-js-textfield") {
+                    input(classes = "mdl-textfield__input", type = InputType.text) {
+                        attrs {
+                            id = "fname"
+                        }
+                    }
+                    label("mdl-textfield__label") {
+                        attrs {
+                            htmlFor = "fname"
+                        }
+                        +"Title"
+                    }
+                }
+            }
+
+            button(classes = "mdl-button mdl-js-button mdl-button--raised") {
+                +"Submit"
+            }
+        }
+    }
+
+    private fun renderIssues(rBuilder: RBuilder) = with(rBuilder) {
         div("mdl-grid") {
             issues()
         }
@@ -59,8 +122,7 @@ class IssueCard : RComponent<RProps, IssueState>() {
         } ?: div { }
 
         document.getElementById("refresh-link")?.apply {
-            addEventListener("click", { event ->
-                event.preventDefault()
+            onClick(preventDefault = true) {
                 window.fetch("/issues")
                         .then(onFulfilled = { response: Response ->
                             response.text().then {
@@ -71,15 +133,33 @@ class IssueCard : RComponent<RProps, IssueState>() {
                                 }
                             }
                         }, onRejected = { throwable: Throwable -> println(throwable) })
-            })
+            }
         }
-
     }
 }
 
 class IssueState(var items: List<Issue> = emptyList()) : RState
 
+class AppState(var screen: Screen) : RState
+
+enum class Screen {
+    ISSUES,
+    CREATE
+}
+
 fun RBuilder.issues() = child(IssueCard::class) {
 }
 
 fun RBuilder.app() = child(App::class) {}
+
+
+/**
+ * Provided by Material design lite
+ * https://getmdl.io/started/index.html#dynamic
+ */
+@JsName("componentHandler")
+external class MdlComponentHandler {
+    companion object {
+        fun upgradeDom(): dynamic = definedExternally
+    }
+}
