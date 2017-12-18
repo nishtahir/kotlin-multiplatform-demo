@@ -14,7 +14,6 @@ import kotlin.browser.window
 class App : RComponent<RProps, RState>() {
 
     override fun RBuilder.render() {
-
         div("mdl-grid") {
             issues()
         }
@@ -27,8 +26,11 @@ class IssueCard : RComponent<RProps, IssueState>() {
         state = IssueState()
     }
 
+    /**
+     * Render must always return at least one valid react element
+     */
     override fun RBuilder.render() {
-        state.items.onEach { issue ->
+        state.items.takeIf { !it.isEmpty() }?.onEach { issue ->
             div("mdl-cell mdl-cell--4-col demo-card-wide mdl-card mdl-shadow--2dp") {
                 div("mdl-card__title") {
                     h2("mdl-card__title-text") {
@@ -54,15 +56,14 @@ class IssueCard : RComponent<RProps, IssueState>() {
                     }
                 }
             }
-        }.let { (it.count() == 0).let { div { } } }
+        } ?: div { }
+
         document.getElementById("refresh-link")?.apply {
             addEventListener("click", { event ->
-                println("Click called")
                 event.preventDefault()
                 window.fetch("/issues")
                         .then(onFulfilled = { response: Response ->
                             response.text().then {
-                                println("fetched")
                                 val list = JSON.parse(Issue::class.serializer().list, it)
                                 list.forEach(::println)
                                 setState {
@@ -73,7 +74,6 @@ class IssueCard : RComponent<RProps, IssueState>() {
             })
         }
 
-        // Render must return at least 1 valid element
     }
 }
 
