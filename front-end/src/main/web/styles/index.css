@@ -12,6 +12,19 @@
     padding: 16px;
 }
   
-/* .demo-card-wide > .mdl-card__menu {
-    color: #fff;
-} */
+.issue-form {
+    margin: auto;
+}
+
+.floating-button {
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    width: 30px;
+    padding: 30px;
+    font-size: 30px;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;   
+}

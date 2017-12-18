@@ -3,6 +3,8 @@ package app
 import com.nishtahir.multiplatform.Issue
 import kotlinx.html.InputType
 import kotlinx.html.id
+import kotlinx.html.js.onClickFunction
+import kotlinx.html.onClick
 import kotlinx.serialization.json.JSON
 import kotlinx.serialization.list
 import kotlinx.serialization.serializer
@@ -22,15 +24,24 @@ class App : RComponent<RProps, AppState>() {
 
     override fun RBuilder.render() {
         println("State - ${state.screen}")
-        when (state.screen) {
-            Screen.ISSUES -> renderIssues(this)
-            Screen.CREATE -> renderCreate(this)
+        div("mdl-grid") {
+            when (state.screen) {
+                Screen.ISSUES -> renderIssues(this)
+                Screen.CREATE -> renderCreate(this)
+            }
         }
-
         document.getElementById("create-link")?.apply {
             onClick(preventDefault = true) {
                 setState {
                     screen = Screen.CREATE
+                }
+            }
+        }
+
+        document.getElementById("refresh-link")?.apply {
+            onClick(preventDefault = true) {
+                setState {
+                    screen = Screen.ISSUES
                 }
             }
         }
@@ -53,19 +64,52 @@ class App : RComponent<RProps, AppState>() {
 
      */
     private fun renderCreate(rBuilder: RBuilder) = with(rBuilder) {
-        div("mdl-cell mdl-cell--4-col") {
+        div("issue-form mdl-cell mdl-cell--4-col") {
             form(action = "#") {
                 div("mdl-textfield mdl-js-textfield") {
                     input(classes = "mdl-textfield__input", type = InputType.text) {
                         attrs {
-                            id = "fname"
+                            id = "title"
                         }
                     }
                     label("mdl-textfield__label") {
                         attrs {
-                            htmlFor = "fname"
+                            htmlFor = "title"
                         }
                         +"Title"
+                    }
+                }
+
+                div("mdl-textfield mdl-js-textfield") {
+                    input(classes = "mdl-textfield__input", type = InputType.text) {
+                        attrs {
+                            id = "description"
+                        }
+                    }
+                    label("mdl-textfield__label") {
+                        attrs {
+                            htmlFor = "description"
+                        }
+                        +"Description"
+                    }
+                }
+
+                // Usage - https://codepen.io/kybarg/pen/dGNeYw
+                div("mdl-selectfield mdl-js-selectfield mdl-selectfield--floating-label") {
+                    select("mdl-selectfield__select") {
+                        attrs {
+                            id = "severity"
+                            name = "Severity"
+                        }
+                        option { +"Low" }
+                        option { +"Medium" }
+                        option { +"High" }
+                    }
+                    label("mdl-selectfield__label") {
+                        attrs {
+                            htmlFor = "severity"
+                        }
+                        +"Severity"
                     }
                 }
             }
@@ -77,9 +121,7 @@ class App : RComponent<RProps, AppState>() {
     }
 
     private fun renderIssues(rBuilder: RBuilder) = with(rBuilder) {
-        div("mdl-grid") {
-            issues()
-        }
+        issues()
     }
 }
 
@@ -121,20 +163,28 @@ class IssueCard : RComponent<RProps, IssueState>() {
             }
         } ?: div { }
 
-        document.getElementById("refresh-link")?.apply {
-            onClick(preventDefault = true) {
-                window.fetch("/issues")
-                        .then(onFulfilled = { response: Response ->
-                            response.text().then {
-                                val list = JSON.parse(Issue::class.serializer().list, it)
-                                list.forEach(::println)
-                                setState {
-                                    items = list
+        button(classes = "floating-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored") {
+            i("material-icons") {
+                +"refresh"
+            }
+            attrs {
+                onClickFunction = {
+                    window.fetch("/issues")
+                            .then(onFulfilled = { response: Response ->
+                                response.text().then {
+                                    val list = JSON.parse(Issue::class.serializer().list, it)
+                                    list.forEach(::println)
+                                    setState {
+                                        items = list
+                                    }
                                 }
-                            }
-                        }, onRejected = { throwable: Throwable -> println(throwable) })
+                            }, onRejected = { throwable: Throwable -> println(throwable) })
+                }
             }
         }
+        /**
+         *
+         */
     }
 }
 
