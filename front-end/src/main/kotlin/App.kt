@@ -8,6 +8,7 @@ import kotlinx.serialization.serializer
 import org.w3c.fetch.Response
 import react.*
 import react.dom.*
+import kotlin.browser.document
 import kotlin.browser.window
 
 class App : RComponent<RProps, RState>() {
@@ -27,7 +28,7 @@ class IssueCard : RComponent<RProps, IssueState>() {
     }
 
     override fun RBuilder.render() {
-        state.items.forEach { issue ->
+        state.items.onEach { issue ->
             div("mdl-cell mdl-cell--4-col demo-card-wide mdl-card mdl-shadow--2dp") {
                 div("mdl-card__title") {
                     h2("mdl-card__title-text") {
@@ -53,25 +54,26 @@ class IssueCard : RComponent<RProps, IssueState>() {
                     }
                 }
             }
+        }.let { (it.count() == 0).let { div { } } }
+        document.getElementById("refresh-link")?.apply {
+            addEventListener("click", { event ->
+                println("Click called")
+                event.preventDefault()
+                window.fetch("/issues")
+                        .then(onFulfilled = { response: Response ->
+                            response.text().then {
+                                println("fetched")
+                                val list = JSON.parse(Issue::class.serializer().list, it)
+                                list.forEach(::println)
+                                setState {
+                                    items = list
+                                }
+                            }
+                        }, onRejected = { throwable: Throwable -> println(throwable) })
+            })
         }
 
-        button(classes = "mdl-button mdl-js-button mdl-button--raised") {
-            attrs {
-                onClickFunction = {
-                    window.fetch("/issues")
-                            .then(onFulfilled = { response: Response ->
-                                response.text().then {
-                                    println("Fetched correctly")
-                                    val list = JSON.parse(Issue::class.serializer().list, it)
-                                    setState {
-                                        items = list
-                                    }
-                                }
-                            }, onRejected = { throwable: Throwable -> println(throwable) })
-                }
-            }
-            +"Refresh"
-        }
+        // Render must return at least 1 valid element
     }
 }
 
