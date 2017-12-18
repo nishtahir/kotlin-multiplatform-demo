@@ -5,10 +5,20 @@ import kotlinx.serialization.json.JSON
 import spark.Spark.get
 
 fun main(args: Array<String>) {
+    val issues = mutableListOf<Issue>()
+
     get("/issues") { request, response ->
         response.type("application/json")
+        JSON.stringify(Issue::class.serializer().list, issues)
+    }
 
-        val list = listOf(Issue(1234, "sample", "Long description here", Severity.MEDIUM, false))
-        JSON.stringify(Issue::class.serializer().list, list)
+    get("/create") { request, response ->
+        with(request) {
+            val issue = Issue(0, queryParams("Title"),
+                    queryParams("Description"),
+                    Severity.valueOf(queryParams("Severity").toUpperCase()),
+                    false)
+            issues.add(issue)
+        }
     }
 }

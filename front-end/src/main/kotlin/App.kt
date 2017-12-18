@@ -1,10 +1,9 @@
 package app
 
 import com.nishtahir.multiplatform.Issue
-import kotlinx.html.InputType
-import kotlinx.html.id
+import kotlinx.html.*
 import kotlinx.html.js.onClickFunction
-import kotlinx.html.onClick
+import kotlinx.html.js.onSubmitFunction
 import kotlinx.serialization.json.JSON
 import kotlinx.serialization.list
 import kotlinx.serialization.serializer
@@ -65,9 +64,9 @@ class App : RComponent<RProps, AppState>() {
      */
     private fun renderCreate(rBuilder: RBuilder) = with(rBuilder) {
         div("issue-form mdl-cell mdl-cell--4-col") {
-            form(action = "#") {
+            form(action = "/create", method = FormMethod.get) {
                 div("mdl-textfield mdl-js-textfield") {
-                    input(classes = "mdl-textfield__input", type = InputType.text) {
+                    input(classes = "mdl-textfield__input", type = InputType.text, name = "Title") {
                         attrs {
                             id = "title"
                         }
@@ -81,7 +80,7 @@ class App : RComponent<RProps, AppState>() {
                 }
 
                 div("mdl-textfield mdl-js-textfield") {
-                    input(classes = "mdl-textfield__input", type = InputType.text) {
+                    input(classes = "mdl-textfield__input", type = InputType.text, name = "Description") {
                         attrs {
                             id = "description"
                         }
@@ -112,11 +111,14 @@ class App : RComponent<RProps, AppState>() {
                         +"Severity"
                     }
                 }
+
+
+                button(classes = "mdl-button mdl-js-button mdl-button--raised", type = ButtonType.submit) {
+                    +"Submit"
+                }
             }
 
-            button(classes = "mdl-button mdl-js-button mdl-button--raised") {
-                +"Submit"
-            }
+
         }
     }
 

@@ -9,7 +9,7 @@ compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
 dependencies {
     expectedBy project(':common')
 
-    compile "com.sparkjava:spark-core:2.5"
+    compile "com.sparkjava:spark-core:2.3"
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
